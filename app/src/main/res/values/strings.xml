@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Inventark</string>
+    <string name="todo">todo</string>
+    <string name="sign_in_to_your_account">Sign in to your Account</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="sign_in">Sign in</string>
+    <string name="forgot_the_password">Forgot my password</string>
+    <string name="or_sign_in_with">Or Sign in with</string>
+    <string name="x_login">X login</string>
+    <string name="don_t_have_an_account_sign_up">Don\'t have an account? Sign Up</string>
+    <string name="inventory_logo">Logo\n</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="full_name">Full Name</string>
+    <string name="sign_up_with_google">Or Sign Up with</string>
+    <string name="sign_up_with">Sign Up</string>
+    <string name="custom_sign_up">Sign up</string>
+    <string name="or_sign_up_with">Or Sign up with</string>
+    <string name="sign_up_with_facebook">Sign Up with Facebook</string>
+    <string name="sign_up_with_twitter">Sign Up with X</string>
+    <string name="already_have_an_account_sign_in">Already have an account? Sign in</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="orders">Orders</string>
+    <string name="products">Products</string>
+    <string name="analytics">Analytics</string>
+    <string name="profile">Profile</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="total_sales">Total Sales</string>
+    <string name="_25012">$25012</string>
+    <string name="pending_orders">Pending Orders</string>
+    <string name="_25">25</string>
+    <string name="order_overview">Order Overview</string>
+    <string name="alerts_amp_notifications"><![CDATA[Alerts & Notifications]]></string>
+    <string name="supplier_performance">Supplier Performance</string>
+    <string name="add_inventory">Add Inventory</string>
+    <string name="inventory">Inventory</string>
+    <string name="enter_quantity">Enter Quantity</string>
+    <string name="enter_reorder_level">Enter Reorder Level</string>
+    <string name="orientation">vertical</string>
+    <string name="layout_gravity">center_horizontal</string>
+    <string name="take_upload_photo">Upload picture</string>
+    <string name="enter_product_name">Enter Product Name</string>
+    <string name="enter_price">Enter Price</string>
+    <string name="account">Account</string>
+
+</resources>
