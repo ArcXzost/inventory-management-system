@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="@color/card_background"
+    android:padding="16dp">
+
+<TextView
+android:id="@+id/tvOrderApprovalTitle"
+android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Approve Order"
+    android:textSize="20sp"
+    android:textStyle="bold"
+    android:textColor="@color/white"/>
+
+<TextView
+android:id="@+id/tvOrderDetails"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_marginTop="8dp"
+android:textSize="16sp" />
+
+<LinearLayout
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_marginTop="16dp"
+android:orientation="horizontal"
+android:padding="8dp">
+
+<ImageButton
+    android:id="@+id/btnApproved"
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:layout_marginEnd="16dp"
+    android:background="@color/dark_background"
+    android:src="@drawable/inventory_approved" />
+
+<ImageButton
+    android:id="@+id/btnCancelled"
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:background="@color/dark_background"
+    android:src="@drawable/inventory_denied"
+    app:tint="@color/red_500" />
+
+</LinearLayout>
+</LinearLayout>
