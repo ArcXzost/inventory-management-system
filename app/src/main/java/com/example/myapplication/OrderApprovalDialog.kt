@@ -53,7 +53,7 @@ class OrderApprovalDialog(
                         .getInventoryQuantityForProduct(orderItem.orderItem.productId)
                     val newQuantity = currentQuantity - orderItem.orderItem.quantity
                     database.inventoryDao()
-                        .updateInventoryQuantityForProduct(orderItem.orderItem.productId, newQuantity)
+                        .updateProductQuantity(orderItem.orderItem.productId, newQuantity)
                 }
 
                 withContext(Dispatchers.Main) {

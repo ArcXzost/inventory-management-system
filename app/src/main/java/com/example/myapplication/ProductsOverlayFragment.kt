@@ -26,6 +26,7 @@ import com.example.myapplication.db.AppDatabase
 import com.example.myapplication.db.InventoryItem
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -197,9 +198,8 @@ class ProductsOverlayFragment : DialogFragment() {
         val rvProducts = view.findViewById<RecyclerView>(R.id.rvProducts)
         rvProducts.layoutManager = LinearLayoutManager(context)
         adapter = ProductAdapter(products,
-            onEditClick = { product -> showEditQuantityDialog(product) },
+            onEditClick = { product -> showEditProductDialog(product) },
             onDeleteClick = { product -> showDeleteConfirmationDialog(product) },
-            inventoryDao = AppDatabase.getInstance(requireContext()).inventoryDao()
         )
         rvProducts.adapter = adapter
 
@@ -488,40 +488,96 @@ class ProductsOverlayFragment : DialogFragment() {
         }
     }
 
-    private fun showEditQuantityDialog(product: InventoryItem) {
+    private fun showEditProductDialog(product: InventoryItem) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_input, null)
         val etQuantity = dialogView.findViewById<TextInputEditText>(R.id.etQuantity)
         val etProductName = dialogView.findViewById<TextInputEditText>(R.id.etProductName)
         val etReorderLevel = dialogView.findViewById<TextInputEditText>(R.id.etReorderLevel)
         val etPrice = dialogView.findViewById<TextInputEditText>(R.id.etPrice)
+        val ivProductImage = dialogView.findViewById<ImageView>(R.id.ivUploadedImage)
+        val btnUploadImage = dialogView.findViewById<Button>(R.id.btnUploadImage)
 
-
-        etQuantity.inputType = InputType.TYPE_CLASS_NUMBER
-        etQuantity.hint = "Enter new quantity"
         etQuantity.setText(product.quantity.toString())
-        etReorderLevel.hint = "Enter new reorder level"
+        etQuantity.hint = "Enter new quantity"
+        etQuantity.inputType = InputType.TYPE_CLASS_NUMBER
+
+        etProductName.setText(product.name)
+        etProductName.hint = "Enter new product name"
+
         etReorderLevel.setText(product.reorderLevel.toString())
+        etReorderLevel.hint = "Enter new reorder level"
+
         etPrice.setText(product.price.toString())
-        etProductName.visibility = View.GONE
+        etPrice.hint = "Enter new price"
+
+        // Set current image
+        if (product.imageUrl!= null) {
+            Picasso.get().load(Uri.parse(product.imageUrl)).into(ivProductImage)
+        }
+
+        btnUploadImage.setOnClickListener {
+            uploadImage(ivProductImage) // Pass the product for later reference
+        }
 
         MaterialAlertDialogBuilder(requireContext(), R.style.CustomMaterialAlertDialog)
-            .setTitle("Edit Quantity")
+            .setTitle("Edit Product")
             .setView(dialogView)
             .setPositiveButton("Confirm") { _, _ ->
                 val newQuantity = etQuantity.text.toString().toIntOrNull()
-                if (newQuantity != null) {
+                val newProductName = etProductName.text.toString()
+                val newReorderLevel = etReorderLevel.text.toString().toIntOrNull()
+                val newPrice = etPrice.text.toString().toFloatOrNull()
+
+                if (newQuantity!= null) {
                     updateProductQuantity(product, newQuantity)
                 }
-                if(etReorderLevel.text.toString().isNotBlank()){
-                    updateProductReorderLevel(product, etReorderLevel.text.toString().toInt())
+                if (newProductName.isNotBlank()) {
+                    updateProductName(product, newProductName)
                 }
-                if(etPrice.text.toString().isNotBlank()){
-                    updateProductPrice(product, etPrice.text.toString().toFloat())
+                if (newReorderLevel!= null) {
+                    updateProductReorderLevel(product, newReorderLevel)
+                }
+                if (newPrice!= null) {
+                    updateProductPrice(product, newPrice)
+                }
+                // Check if image was updated
+                if (uploadedImageUri!= null) {
+                    updateProductImage(product, uploadedImageUri!!)
                 }
                 (parentFragment as? DashboardFragment)?.fetchDataAndUpdateUI()
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    // New method for updating the product name
+    private fun updateProductName(product: InventoryItem, newName: String) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                AppDatabase.getInstance(requireContext()).inventoryDao().updateProductName(product.productId, newName)
+            }
+            val index = products.indexOfFirst { it.productId == product.productId }
+            if (index!= -1) {
+                products[index] = product.copy(name = newName)
+                adapter.notifyItemChanged(index)
+            }
+            productUpdateListener?.onProductsUpdated()
+        }
+    }
+
+    // New method for updating the product image
+    private fun updateProductImage(product: InventoryItem, newImageUri: Uri) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                AppDatabase.getInstance(requireContext()).inventoryDao().updateProductImage(product.productId, newImageUri.toString())
+            }
+            val index = products.indexOfFirst { it.productId == product.productId }
+            if (index!= -1) {
+                products[index] = product.copy(imageUrl = newImageUri.toString())
+                adapter.notifyItemChanged(index)
+            }
+            productUpdateListener?.onProductsUpdated()
+        }
     }
 
     private fun showDeleteConfirmationDialog(product: InventoryItem) {

@@ -48,7 +48,10 @@ interface InventoryDao {
     @Query("SELECT quantity FROM inventory_items WHERE productId = :productId")
     fun getInventoryQuantityForProduct(productId: String): Int
 
-    @Query("UPDATE inventory_items SET quantity = :newQuantity WHERE productId = :productId")
-    fun updateInventoryQuantityForProduct(productId: String, newQuantity: Int)
+    @Query("UPDATE inventory_items SET imageUrl = :newImageUri WHERE productId = :productId")
+    suspend fun updateProductImage(productId: String, newImageUri: String)
+
+    @Query("UPDATE inventory_items SET name = :newName WHERE productId = :productId")
+    suspend fun updateProductName(productId: String, newName: String)
 
 }
