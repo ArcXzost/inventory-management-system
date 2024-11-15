@@ -8,6 +8,8 @@ import java.util.*
 import kotlin.random.Random
 import com.example.myapplication.db.*
 import kotlinx.coroutines.flow.first
+import kotlin.math.PI
+import kotlin.math.sin
 
 class DatabaseInitializer(context: Context) {
     private val database: AppDatabase = Room.databaseBuilder(
@@ -23,6 +25,43 @@ class DatabaseInitializer(context: Context) {
     private val inventoryItemDao = database.inventoryDao()
     private val orderItemDao = database.orderItemDao()
     private val orderTrackingDao = database.orderTrackingDao()
+    private val categoryDemandDao = database.categoryDemandDao()
+    private val demandHistoryDao = database.demandHistoryDao()
+
+    private val categorySeasonality = mapOf(
+        "Electronics" to SeasonalPattern(
+            baselineDemand = 30,
+            seasonalAmplitude = 15,
+            peakMonth = 11  // Peak in December (Black Friday/Christmas)
+        ),
+        "Clothing" to SeasonalPattern(
+            baselineDemand = 25,
+            seasonalAmplitude = 10,
+            peakMonth = 8   // Peak in September (Fall season)
+        ),
+        "Books" to SeasonalPattern(
+            baselineDemand = 20,
+            seasonalAmplitude = 8,
+            peakMonth = 7   // Peak in August (Back to school)
+        ),
+        "Home & Garden" to SeasonalPattern(
+            baselineDemand = 15,
+            seasonalAmplitude = 12,
+            peakMonth = 4   // Peak in May (Spring season)
+        ),
+        "Sports" to SeasonalPattern(
+            baselineDemand = 22,
+            seasonalAmplitude = 10,
+            peakMonth = 5   // Peak in June (Summer season)
+        )
+    )
+
+    data class SeasonalPattern(
+        val baselineDemand: Int,
+        val seasonalAmplitude: Int,
+        val peakMonth: Int
+    )
+
 
     suspend fun initializeDatabase() {
         withContext(Dispatchers.IO) {
@@ -34,6 +73,81 @@ class DatabaseInitializer(context: Context) {
 
     private suspend fun isDatabaseEmpty(): Boolean {
         return customerDao.getAllCustomers().first().isEmpty()
+    }
+
+    private suspend fun generateDemandHistory() {
+        val calendar = Calendar.getInstance()
+        val currentDate = calendar.time
+
+        // Get all inventory items
+        val items = inventoryItemDao.getAllItems()
+
+        // Generate 365 days of history
+        items.forEach { item ->
+            calendar.time = currentDate
+            calendar.add(Calendar.DAY_OF_YEAR, -365) // Start from one year ago
+
+            val seasonalPattern = categorySeasonality[item.category]
+                ?: categorySeasonality["Electronics"]!! // Default pattern
+
+            repeat(365) {
+                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                val demand = calculateDailyDemand(
+                    calendar.time,
+                    seasonalPattern,
+                    item.category
+                )
+
+                val demandHistory = DemandHistory(
+                    productId = item.productId,
+                    demandDate = calendar.time,
+                    quantity = demand
+                )
+                demandHistoryDao.insertDemandHistory(demandHistory)
+            }
+        }
+    }
+
+    private fun calculateDailyDemand(
+        date: Date,
+        pattern: SeasonalPattern,
+        category: String
+    ): Int {
+        val calendar = Calendar.getInstance().apply { time = date }
+
+        // Calculate seasonal component
+        val monthPosition = calendar.get(Calendar.MONTH)
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+
+        // Calculate distance from peak month (in radians)
+        val monthDistance = (monthPosition - pattern.peakMonth + 12) % 12
+        val seasonalFactor = sin(monthDistance * (2 * PI / 12))
+
+        // Base demand with seasonal variation
+        var demand = pattern.baselineDemand +
+                (pattern.seasonalAmplitude * seasonalFactor).toInt()
+
+        // Add day-of-week variation
+        demand += when (dayOfWeek) {
+            Calendar.SATURDAY, Calendar.SUNDAY -> -5  // Lower demand on weekends
+            Calendar.FRIDAY -> 5               // Higher demand on Fridays
+            else -> 0
+        }
+
+        // Add category-specific variations
+        demand += when (category) {
+            "Electronics" -> if (calendar.get(Calendar.MONTH) == 10) 15 else 0  // Black Friday month
+            "Clothing" -> if (calendar.get(Calendar.MONTH) in 7..8) 10 else 0   // Back to school
+            "Books" -> if (calendar.get(Calendar.MONTH) in 7..8) 12 else 0      // Academic year start
+            else -> 0
+        }
+
+        // Add random noise (-20% to +20%)
+        val randomNoise = (demand * (Random.nextDouble(-0.2, 0.2))).toInt()
+        demand = demand + randomNoise
+
+        // Ensure demand is not negative
+        return maxOf(0, demand)
     }
 
     private suspend fun insertDummyData() {
@@ -84,6 +198,15 @@ class DatabaseInitializer(context: Context) {
             )
         }
         customers.forEach { customerDao.insertCustomer(it) }
+
+        val categoryDemandData = listOf(
+            CategoryDemand("Electronics", avgDemand = 500.0, demandStdDev = 50.0),
+            CategoryDemand("Clothing", avgDemand = 400.0, demandStdDev = 60.0),
+            CategoryDemand("Books", avgDemand = 300.0, demandStdDev = 40.0),
+            CategoryDemand("Home & Garden", avgDemand = 200.0, demandStdDev = 30.0),
+            CategoryDemand("Sports", avgDemand = 350.0, demandStdDev = 45.0)
+        )
+        categoryDemandData.forEach { categoryDemandDao.insertCategoryDemand(it) }
 
         // 4. Insert Orders and related entities
         val orderStatuses = listOf("Pending", "Processing", "Completed", "Cancelled")

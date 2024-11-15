@@ -15,8 +15,9 @@ import kotlinx.coroutines.withContext
         Order::class, OrderItem::class, Shipment::class,
         Supplier::class, SupplierItem::class, Customer::class,
         Categories::class, Warehouse::class, OrderTracking::class,
+        CategoryDemand::class,
     ],
-    version = 9
+    version = 10
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -28,6 +29,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun shipmentDao(): ShipmentDao
     abstract fun orderItemDao(): OrderItemDao
     abstract fun orderTrackingDao(): OrderTrackingDao
+    abstract fun categoryDemandDao(): CategoryDemandDao
+    abstract fun demandHistoryDao(): DemandHistoryDao
 
     companion object {
         private var instance: AppDatabase? = null

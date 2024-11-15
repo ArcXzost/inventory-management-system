@@ -18,13 +18,13 @@ android {
         targetSdk= 34
         versionCode= 1
         versionName= "1.0"
-
         testInstrumentationRunner= "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
             minifyEnabled false
+//            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -52,6 +52,8 @@ dependencies {
     implementation libs.firebase.auth.ktx
     implementation libs.androidx.material3.android
     implementation libs.firebase.storage.ktx
+    implementation libs.androidx.espresso.core
+    implementation libs.transport.runtime
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
     implementation libs.androidx.credentials
@@ -84,4 +86,8 @@ dependencies {
     implementation libs.androidx.navigation.fragment.ktx
     implementation(libs.androidx.navigation.ui.ktx)
     implementation libs.picasso
+
+    implementation libs.pytorch.android.v190
+//    implementation libs.pytorch.android.torchvision
+//    implementation libs.pytorch.android.tensor
 }

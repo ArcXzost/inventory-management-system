@@ -216,38 +216,62 @@ class ProductsOverlayFragment : DialogFragment() {
         val etProductName = dialogView.findViewById<TextInputEditText>(R.id.etProductName)
         val etQuantity = dialogView.findViewById<TextInputEditText>(R.id.etQuantity)
         val etReorderLevel = dialogView.findViewById<TextInputEditText>(R.id.etReorderLevel)
-        val etPrice = dialogView.findViewById<TextInputEditText>(R.id.etPrice) // **NEW**
-        val ivUploadedImage = dialogView.findViewById<ImageView>(R.id.ivUploadedImage) // **NEW**
+        val etPrice = dialogView.findViewById<TextInputEditText>(R.id.etPrice)
+        val ivUploadedImage = dialogView.findViewById<ImageView>(R.id.ivUploadedImage)
         val btnUploadImage = dialogView.findViewById<Button>(R.id.btnUploadImage)
 
-
+        // Set hints for user input
         etProductName.hint = "Enter Product Name"
-        etPrice.hint = "Enter Price" // **NEW**
+        etPrice.hint = "Enter Price"
         etQuantity.hint = "Enter Quantity"
         etReorderLevel.hint = "Enter Reorder Level"
-        etPrice.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL // **NEW**
+        etPrice.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
 
-        btnUploadImage.setOnClickListener { // **NEW**
+        // Image upload functionality
+        btnUploadImage.setOnClickListener {
             uploadImage(ivUploadedImage)
         }
 
+        // Show the dialog
         MaterialAlertDialogBuilder(requireContext(), R.style.CustomMaterialAlertDialog)
             .setTitle("Add New Product")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
-                val productName = etProductName.text.toString()
-                val quantity = etQuantity.text.toString().toIntOrNull()?: 0
-                val reorderLevel = etReorderLevel.text.toString().toIntOrNull()?: 0
-                val price = etPrice.text.toString().toFloatOrNull()?: 0f // **NEW**
-                val imageUri = uploadedImageUri // **NEW**
+                // Validate inputs and retrieve values
+                val productName = etProductName.text?.toString()?.trim()
+                val quantity = etQuantity.text?.toString()?.toIntOrNull()
+                val reorderLevel = etReorderLevel.text?.toString()?.toIntOrNull()
+                val price = etPrice.text?.toString()?.toFloatOrNull()
+                val imageUri = uploadedImageUri
 
-                if (productName.isNotBlank() && imageUri!= null) {
-                    addNewProduct(productName, quantity, reorderLevel, price, imageUri)
+                // Perform validation for required fields
+                when {
+                    productName.isNullOrBlank() -> {
+                        etProductName.error = "Product name is required"
+                        return@setPositiveButton
+                    }
+                    quantity == null || quantity <= 0 -> {
+                        etQuantity.error = "Valid quantity is required"
+                        return@setPositiveButton
+                    }
+                    reorderLevel == null || reorderLevel < 0 -> {
+                        etReorderLevel.error = "Valid reorder level is required"
+                        return@setPositiveButton
+                    }
+                    price == null || price <= 0 -> {
+                        etPrice.error = "Valid price is required"
+                        return@setPositiveButton
+                    }
+                    else -> {
+                        // If all validations pass, proceed with adding the product
+                        addNewProduct(productName, quantity, reorderLevel, price, imageUri ?: Uri.EMPTY)
+                    }
                 }
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
+
 
     private fun createPermanentImageUri(): Uri {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
@@ -448,7 +472,6 @@ class ProductsOverlayFragment : DialogFragment() {
         }
     }
 
-    // **NEW** - Add image URI and price to the product entity
     private fun addNewProduct(
         productName: String,
         quantity: Int,
@@ -471,8 +494,8 @@ class ProductsOverlayFragment : DialogFragment() {
                     category = categoryName,
                     quantity = quantity,
                     reorderLevel = reorderLevel,
-                    price = price, // **NEW**
-                    imageUrl = uploadedImageUri.toString()
+                    price = price,
+                    imageUrl = imageUri.toString()
                 )
                 AppDatabase.getInstance(requireContext()).inventoryDao().addProduct(newProduct)
 

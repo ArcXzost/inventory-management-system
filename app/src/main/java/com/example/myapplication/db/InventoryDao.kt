@@ -16,6 +16,9 @@ interface InventoryDao {
     @Query("SELECT * FROM inventory_items WHERE category = :category")
     fun getItemsByCategory(category: String): List<InventoryItem>
 
+    @Query("SELECT * FROM inventory_items WHERE productId = :productId")
+    fun getItemById(productId: String): InventoryItem?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertItem(item: InventoryItem)
 
@@ -53,5 +56,8 @@ interface InventoryDao {
 
     @Query("UPDATE inventory_items SET name = :newName WHERE productId = :productId")
     suspend fun updateProductName(productId: String, newName: String)
+
+    @Query("SELECT productId FROM inventory_items")
+    fun getAllProductIds(): List<String>
 
 }

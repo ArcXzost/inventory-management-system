@@ -43,5 +43,6 @@
     <string name="enter_product_name">Enter Product Name</string>
     <string name="enter_price">Enter Price</string>
     <string name="account">Account</string>
+    <string name="loading_data">Loading Data...</string>
 
 </resources>
