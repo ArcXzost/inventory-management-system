@@ -37,3 +37,7 @@ An advanced inventory management system designed to streamline stock operations,
 1. Clone the repository:
    ```bash
    git clone https://github.com/your-username/inventory-management.git
+   
+2. Download the apk from the link:
+   ```bash
+   https://drive.google.com/file/d/18Vbs5SyEMdBEzbiaqBjIyUreKkWS2mZu/view?usp=drive_link
